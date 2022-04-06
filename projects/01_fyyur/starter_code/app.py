@@ -257,7 +257,6 @@ def create_venue_submission():
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  form = VenueForm(request.form)
 
   try:
     venue_to_add = Venue(
@@ -276,10 +275,12 @@ def create_venue_submission():
     
     db.session.add(venue_to_add)
     db.session.commit()
-    
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
   except:
+    db.session.rollback()
     flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+  finally:
+    db.session.close()
   return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
@@ -473,7 +474,6 @@ def create_artist_submission():
   # flash('Artist ' + request.form['name'] + ' was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-  form = ArtistForm(request.form) 
   
   try:
     artist_to_add = Artist(
@@ -491,10 +491,12 @@ def create_artist_submission():
 
     db.session.add(artist_to_add)
     db.session.commit()
-
     flash('Artist ' + request.form['name'] + ' was successfully listed!')
   except:
+    db.session.rollback()
     flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
+  finally:
+    db.session.close()
   return render_template('pages/home.html')
 
 
@@ -559,7 +561,6 @@ def create_show_submission():
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Show could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  form = ShowForm(request.form)
 
   try:
     show_to_add = Show(
@@ -570,10 +571,12 @@ def create_show_submission():
 
     db.session.add(show_to_add)
     db.session.commit()
-
     flash('Show was successfully listed!')
   except:
+    db.session.rollback()
     flash('An error occurred. Show could not be listed.')
+  finally:
+    db.session.close()
   return render_template('pages/home.html')
 
 @app.errorhandler(404)

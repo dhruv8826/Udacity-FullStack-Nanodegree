@@ -141,17 +141,14 @@ def venues():
 
   data = []
   venues = Venue.query.all()
-
-  areas = set() # to avoid duplicate city, state combinations
-  for venue in venues:
-    areas.add((venue.city, venue.state))
+  areas = Venue.query.distinct(Venue.city, Venue.state).all()
 
   for area in areas:
     # print(area)
     venue_list = []
     for venue in venues:
       # print(venue)
-      if (venue.city == area[0] and venue.state == area[1]):
+      if (venue.city == area.city and venue.state == area.state):
         # print('inside loop-> ', venue)
         num_upcoming_shows=0
         shows = Show.query.filter_by(venue_id=venue.id).all()
@@ -167,8 +164,8 @@ def venues():
         # print(venue_list)
 
     data.append({
-      "city": area[0],
-      "state": area[1],
+      "city": area.city,
+      "state": area.state,
       "venues": venue_list
     })
     # print(data)
@@ -179,14 +176,37 @@ def search_venues():
   # TODO: implement search on venues with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-  response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
+  # response={
+  #   "count": 1,
+  #   "data": [{
+  #     "id": 2,
+  #     "name": "The Dueling Pianos Bar",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  # }
+  search_term = request.form.get('search_term', '')
+  print('Search Term-> ',search_term)
+
+  data = []
+  venues_list = Venue.query.filter(Venue.name.ilike(f'%{search_term}%')).all()
+  print(venues_list)
+  for venue in venues_list:
+    upcoming_shows = []
+    shows = Show.query.filter_by(venue_id=venue.id).all()
+    for show in shows:
+      if (show.start_time > datetime.now()):
+        upcoming_shows.append(show)
+    data.append({
+      "id": venue.id,
+      "name": venue.name,
+      "num_upcoming_shows": len(upcoming_shows)
+    })
+
+  response = {
+    "count": len(venues_list),
+    "data": data
   }
+  print(response)
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/venues/<int:venue_id>')
@@ -397,14 +417,37 @@ def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
-  response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
+  # response={
+  #   "count": 1,
+  #   "data": [{
+  #     "id": 4,
+  #     "name": "Guns N Petals",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  # }
+  search_term = request.form.get('search_term', '')
+  print('Search Term-> ', search_term)
+
+  data = []
+  artists_list = Artist.query.filter(Artist.name.ilike(f'%{search_term}%')).all()
+  print(artists_list)
+  for artist in artists_list:
+    upcoming_shows = []
+    shows = Show.query.filter_by(artist_id=artist.id).all()
+    for show in shows:
+      if (show.start_time > datetime.now()):
+        upcoming_shows.append(show)
+    data.append({
+      "id": artist.id,
+      "name": artist.name,
+      "num_upcoming_shows": len(upcoming_shows)
+    })
+
+  response = {
+    "count": len(artists_list),
+    "data": data
   }
+  print(response)
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')

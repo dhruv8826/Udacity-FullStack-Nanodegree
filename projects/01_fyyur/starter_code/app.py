@@ -341,13 +341,14 @@ def delete_venue(venue_id):
       db.session.delete(venue)
       db.session.commit()
       flash('Venue with ID - ' + venue_id + 'has been successfully deleted.')
-      print('inside try')
+      # print('inside try')
     except:
       db.session.rollback()
       flash('An error occured. Venue with ID - ' + venue_id + ' could not be deleted.')
       print('inside except')
     finally:
       db.session.close()
+  
   return render_template('pages/home.html')
 
 #  Artists
@@ -613,7 +614,7 @@ def edit_venue(venue_id):
   venue_data={
     "id": venue.id,
     "name": venue.name,
-    "genres": venue.genres,
+    "genres": venue.genres.split(','),
     "address": venue.address,
     "city": venue.city,
     "state": venue.state,

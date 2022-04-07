@@ -1,3 +1,4 @@
+# Test file to monitor the data
 import sys
 from app import Venue, Artist, Show
 print (sys.path)

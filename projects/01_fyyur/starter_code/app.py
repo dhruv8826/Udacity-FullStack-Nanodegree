@@ -347,7 +347,7 @@ def create_venue_submission():
 			db.session.close()
 	else:
 		for error in form.errors:
-			flash('Error: ', error)
+			flash('Error: ' + error)
 	return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
@@ -524,10 +524,10 @@ def show_artist(artist_id):
 	upcoming_shows_details = db.session.query(Show).join(Venue).filter(Show.artist_id==artist_id).filter(Show.start_time>datetime.now()).all()
 	for past_show in past_shows_details:
 		past_shows.append({
-			"venue_id": upcoming_show.venue_id,
-			"venue_name": upcoming_show.venue.name,
-			"venue_image_link": upcoming_show.venue.image_link,
-			"start_time": format_datetime(str(upcoming_show.start_time))
+			"venue_id": past_show.venue_id,
+			"venue_name": past_show.venue.name,
+			"venue_image_link": past_show.venue.image_link,
+			"start_time": format_datetime(str(past_show.start_time))
 		})
 	for upcoming_show in upcoming_shows_details:
 		upcoming_shows.append({
@@ -753,7 +753,7 @@ def create_artist_submission():
 			db.session.close()
 	else:
 		for error in form.errors:
-			flash('Error: ', error)
+			flash('Error: ' + error)
 	return render_template('pages/home.html')
 
 

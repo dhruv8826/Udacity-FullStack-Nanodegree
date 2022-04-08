@@ -193,7 +193,7 @@ class ArtistForm(Form):
     )
     phone = StringField(
         # TODO implement validation logic for phone 
-        'phone'
+        'phone', validators=[DataRequired(), Regexp("^[0-9]*$", message='The information provided is not in correct format. phone number should only consist numbers.')]
     )
     image_link = StringField(
         'image_link', validators=[URL()]

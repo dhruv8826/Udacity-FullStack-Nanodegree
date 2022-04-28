@@ -77,6 +77,157 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 
 
 
+## Endpoints
+
+```
+
+GET '/api/v1.0/categories'
+- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
+- Request Arguments: None
+- Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
+{'1' : "Science",
+'2' : "Art",
+'3' : "Geography",
+'4' : "History",
+'5' : "Entertainment",
+'6' : "Sports"}
+
+
+GET '/api/v1.0/questions?page=<page_number>'
+- Fetches a dictionary of questions in a paginated format
+- Request Arguments: optional page number as query parameter
+- Returns:  
+{"categories": {
+   "1": "Science", 
+   "2": "Art", 
+   "3": "Geography", 
+   "4": "History", 
+   "5": "Entertainment", 
+   "6": "Sports"
+ }, 
+ "current_category": null, 
+ "questions": [
+   {
+     "answer": "Test Answer 1", 
+     "category": 2, 
+     "difficulty": 3, 
+     "id": 31, 
+     "question": "Test Question 1?"
+   },  
+   {
+     "answer": "Test Answer 2", 
+     "category": 2, 
+     "difficulty": 1, 
+     "id": 32, 
+     "question": "test Question 2"
+   }
+ ], 
+ "success": true, 
+ "total_questions": 2
+}
+
+
+DELETE '/api/v1.0/questions/<question_id>'
+- Deletes the question from the database for the id sent as path variable.
+- Request Arguments: question_id, to specify the specific question to be deleted
+- Returns:  
+{
+  "deleted": "28", 
+  "success": true
+}
+
+
+POST '/api/v1.0/questions'
+- Create a new question in the database.
+- Request Arguments: a json object to be sent with information
+{
+    "question":<string_value>, 
+    "answer":<string_value>, 
+    "difficulty":<int_value>, 
+    "category":<string_value
+}
+- Returns:  
+{
+  "created": 29, 
+  "success": true
+}
+
+
+POST '/api/v1.0/questions'
+- Search a question in the database. Endpoint similar to create but contains a different request argument.
+- Request Arguments: 
+{
+    "searchTerm":<string_value>
+}
+- Returns:  
+{
+  "current_category": null, 
+  "questions": [
+    {
+      "answer": "Test Answer", 
+      "category": 2, 
+      "difficulty": 1, 
+      "id": 35, 
+      "question": "Test Question?"
+    }
+  ], 
+  "success": true, 
+  "total_questions": 1
+}
+
+
+GET '/api/v1.0/categories/<category_id>/questions'
+- Return all questions from the database that belong to a certain category.
+- Request Arguments: category_id, integer value defining the category id for which questions are to be retrieved.
+- Returns:  
+{
+  "current_category": 1, 
+  "questions": [
+    {
+      "answer": "The Liver", 
+      "category": 1, 
+      "difficulty": 4, 
+      "id": 20, 
+      "question": "What is the heaviest organ in the human body?"
+    }, 
+    {
+      "answer": "Alexander Fleming", 
+      "category": 1, 
+      "difficulty": 3, 
+      "id": 21, 
+      "question": "Who discovered penicillin?"
+    }, 
+  ], 
+  "success": true, 
+  "total_questions": 2
+}
+
+
+POST '/api/v1.0/quizzes'
+- To Play the quizzes game. Fetches random questions one at a time from the selected category. Does not repeat the question again.
+- Request Arguments: 
+{
+    "previous_questions": <array_of_integers_containing_question_id>, 
+    "quiz_category": {
+        "id":<int_value>, 
+        "type":<string_value>
+    }
+}
+- Returns:  
+{
+  "question": {
+    "answer": "The Liver", 
+    "category": 1, 
+    "difficulty": 4, 
+    "id": 20, 
+    "question": "What is the heaviest organ in the human body?"
+  }, 
+  "success": true
+}
+
+
+```
+
 ## Review Comment to the Students
 ```
 This README is missing documentation of your endpoints. Below is an example for your endpoint to get all categories. Please use it as a reference for creating your documentation and resubmit your code. 

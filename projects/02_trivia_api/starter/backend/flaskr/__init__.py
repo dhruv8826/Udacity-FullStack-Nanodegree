@@ -136,7 +136,7 @@ def create_app(test_config=None):
 
 			search_text = request.get_json().get('searchTerm')
 
-			questions = Question.query.filter(Question.question.ilike(f'%{search_text}')).all()
+			questions = Question.query.filter(Question.question.ilike(f'%{search_text}%')).all()
 
 			if(len(questions) != 0):
 				return jsonify({

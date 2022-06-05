@@ -1,6 +1,9 @@
 import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from dotenv import load_dotenv
+
+load_dotenv()
 
 database_name = os.environ['DB_NAME']
 user_name = os.environ['DB_USER']
@@ -15,6 +18,7 @@ def setup_db(app, database_path=database_path):
     db.app = app
     db.init_app(app)
     migrate = Migrate(app, db)
+    db.create_all()
 
 class Employee(db.Model):
     __tablename__ = 'Employee'
@@ -84,22 +88,18 @@ class Works(db.Model):
     __tablename__ = 'Works'
 
     id = db.Column(db.Integer, primary_key=True)
-    start_date = db.Column(db.Date())
-    end_date = db.Column(db.Date())
 
     employee_id = db.Column(db.Integer, db.ForeignKey('Employee.id'), nullable=False)
     employee = db.relationship('Employee', backref='works')
     company_id = db.Column(db.Integer, db.ForeignKey('Company.id'), nullable=False)
     company = db.relationship('Company', backref='works')
 
-    def __init__(self, start_date, end_date, employee_id, company_id):
-        self.start_date = start_date
-        self.end_date = end_date
+    def __init__(self, employee_id, company_id):
         self.employee_id = employee_id
         self.company_id = company_id
 
     def __ref__(self):
-        return f'<WORKS ID: {self.id}, Employee_Id: {self.employee_id}, Company_Id: {self.company_id}, Start_date: {self.start_date}, End_date: {self.end_date}>'
+        return f'<WORKS ID: {self.id}, Employee_Id: {self.employee_id}, Company_Id: {self.company_id}>'
 
     def insert(self):
         db.session.add(self)
@@ -112,11 +112,12 @@ class Works(db.Model):
     def update(self):
         db.session.commit()
 
-    def json_view(self):
+    def employee_json_view(self):
         return {
-            'id': self.id,
-            'employee_id': self.employee_id,
-            'company_id': self.company_id,
-            'start_date': self.start_date,
-            'end_date': self.end_date
+            'employee_id': self.employee_id
+        }
+    
+    def company_json_view(self):
+        return {
+            'company_id': self.company_id
         }

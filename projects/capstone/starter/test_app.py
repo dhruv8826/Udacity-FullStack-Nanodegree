@@ -1,1 +1,232 @@
+import unittest
+import os
+import json
+from wsgiref import headers
 
+from flask_sqlalchemy import SQLAlchemy
+from app import create_app
+from models import *
+
+EMPLOYEE_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IktXYWJ5VkF0LXctSlRFSHRQcUxILSJ9.eyJpc3MiOiJodHRwczovL2Rldi1jYnNib2kxdS51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjI3NjVhZGE0MDI4ZTQwMDZmZmI0ZWQ0IiwiYXVkIjoiZW1wQ29tcCIsImlhdCI6MTY1NDQzOTA5MiwiZXhwIjoxNjU0NDQ2MjkyLCJhenAiOiJ6S2s1N25KV2dWb0E2Q3JSZFhOa3Y2N1JLbHNKd0MwVCIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZ2V0OmVtcGxveWVlIiwicGF0Y2g6ZW1wbG95ZWUiLCJwb3N0OmVtcGxveWVlIl19.M_bYQ69Peh5FGsfHHmp6gSjiZGxFUGBqJlQecEov4w16L_6Oy7xGyAfBZgW6cbx8acm9KfK-_v-xDKzMUeOJpfl3B2nptN-sIFjQN1bcrC_dLsUj7jlwbKJ8kSkwIlVbG6Rn4nF1Zwj020J6MDyZKfO5kwog47l14szMvOCRotcYivwaVtTtTrcMLZGT3OOs9w6jM6pqXRkUjLY5zTqT2xPePyFwn5HD-nChqXCYxFMf2lRIXsChMuZjHQMmcfd5rXahF9ILYJDIq81M37O00pvOtIzfzlTqsNsbCqe_G18E93EuXF8o5jPtDwD8siK1X66n7edPJ6S9FHW-NSsh3g'
+ADMIN_TOKEN = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IktXYWJ5VkF0LXctSlRFSHRQcUxILSJ9.eyJpc3MiOiJodHRwczovL2Rldi1jYnNib2kxdS51cy5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NjI3NjVhYmJjZmM0ODEwMDY3YzI3NjVhIiwiYXVkIjoiZW1wQ29tcCIsImlhdCI6MTY1NDQzOTQ0OCwiZXhwIjoxNjU0NDQ2NjQ4LCJhenAiOiJ6S2s1N25KV2dWb0E2Q3JSZFhOa3Y2N1JLbHNKd0MwVCIsInNjb3BlIjoiIiwicGVybWlzc2lvbnMiOlsiZGVsZXRlOmNvbXBhbnkiLCJkZWxldGU6ZW1wbG95ZWUiLCJnZXQ6Y29tcGFueSIsImdldDpjb21wYW55LWFsbCIsImdldDplbXBsb3llZSIsImdldDplbXBsb3llZS1hbGwiLCJwYXRjaDpjb21wYW55IiwicGF0Y2g6ZW1wbG95ZWUiLCJwb3N0OmNvbXBhbnkiLCJwb3N0OmVtcGxveWVlIl19.movkHqCT91cqfpzHPXnajIWppv88b6-zX-bNo3p_jTPTLlbUr3ZD5ikufZ1rZ1oChNPyFlY7ZhvPi9bqu20tME8I5StmnnW1sPHykl98iNhHNjGXERjacc5Z_xkUb2mns13RW_hkWPaffM2qmjfTozoQHjy8b-TQan8D5gZqrcKAGZC20hThA1YpOhW5TG4b5wYQk8fln1QdNjNTDQCZE7RVwtP-KN6QJQDBoqYlVq8YLuvxduS7eBaX_H7YiZhugHT76JJTn0p_azZarJEIUBeVkuTXZwtjJjJPa-ySAuLxxHGxmtF2RoG3loVgxVfjsyqyzT5J4g7Pvi1PyAma9g'
+
+class EmpCompTestCase(unittest.TestCase):
+    '''setup'''
+    def setUp(self):
+        '''Define Test variables and initialize app'''
+        self.app = create_app()
+        self.client = self.app.test_client
+        self.headers = {'Content-Type': 'application/json'}
+        self.database_name = os.environ['TEST_DB_NAME']
+        self.user_name = os.environ['DB_USER']
+        self.user_password = os.environ['DB_PASSWORD']
+        self.database_path = "postgresql://{}:{}@{}/{}".format(self.user_name, self.user_password, 'localhost:5432', self.database_name)
+        setup_db(self.app, self.database_path)
+
+        #bind app with current context
+        with self.app.app_context():
+            self.db = SQLAlchemy()
+            self.db.init_app(self.app)
+
+            self.db.drop_all()
+            self.db.create_all()
+
+    def tearDown(self):
+        '''Executed after each test'''
+        pass
+
+    '''
+    Test for Company
+    '''
+    def test_a_add_company(self):
+        new_company = {
+            'company_name': 'Test Company 1',
+            'industry': 'Test Industry 1'
+        }
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        res = self.client().post('/company', json=new_company, headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_b_add_company_fails_without_token(self):
+        new_company = {
+            'company_name': 'Test Company 1',
+            'industry': 'Test Industry 1'
+        }
+
+        res = self.client().post('/company', json=new_company)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 401) # Headermissing error
+
+    def test_c_add_company_fails_without_permission(self):
+        new_company = {
+            'company_name': 'Test Company 4',
+            'industry': 'Test Industry 4'
+        }
+        self.headers.update({'Authorization': 'Bearer ' + EMPLOYEE_TOKEN})
+
+        res = self.client().post('/company', json=new_company, headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 403)
+
+    def test_d_get_company_by_id(self):
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        res = self.client().get('/company/7', headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_e_get_all_companies(self):
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        res = self.client().get('/company/all', headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_f_patch_company_by_id(self):
+        new_company = {
+            'company_name': 'Test New Company 7',
+            'industry': 'Test New Industry 7'
+        }
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        res = self.client().patch('/company/7', json=new_company, headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_g_delete_company_by_id(self):
+        # First create a company that can be deleted later
+        new_company = {
+            'company_name': 'Test Company to delete1',
+            'industry': 'Test Industry to delete 1'
+        }
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        post_res = self.client().post('/company', json=new_company, headers=self.headers)
+        post_data = json.loads(post_res.data)
+
+        self.assertEqual(post_res.status_code, 200)
+
+        # Delete the company created
+        company_id = post_data.get('data').get('company').get('id')
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        delete_res = self.client().delete('/company/' + str(company_id), headers=self.headers)
+        delete_data = json.loads(delete_res.data)
+
+        self.assertEqual(delete_res.status_code, 200)
+
+
+    '''
+    Test for Employee
+    '''
+    def test_h_add_employee(self):
+        new_employee = {
+            'firstname': 'TestFirstName3',
+            'lastname': 'TestLastName3',
+            'works_in': {
+                'company_id': 7
+            }
+        }
+        self.headers.update({'Authorization': 'Bearer ' + EMPLOYEE_TOKEN})
+
+        res = self.client().post('/employee', json=new_employee, headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_i_add_employee_by_admin(self):
+        new_employee = {
+            'firstname': 'TestFirstName8',
+            'lastname': 'TestLastName8',
+            'works_in': {
+                'company_id': 7
+            }
+        }
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        res = self.client().post('/employee', json=new_employee, headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_j_get_employee_by_id(self):
+        self.headers.update({'Authorization': 'Bearer ' + EMPLOYEE_TOKEN})
+
+        res = self.client().get('/employee/1', headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_k_get_employee_by_id_by_admin(self):
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        res = self.client().get('/employee/1', headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_l_get_all_employee(self):
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        res = self.client().get('/employee/all', headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_m_should_fail_while_get_all_employee_by_employee_role(self):
+        self.headers.update({'Authorization': 'Bearer ' + EMPLOYEE_TOKEN})
+
+        res = self.client().get('/employee/all', headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 403)
+
+    def test_n_patch_company_by_id(self):
+        new_company = {
+            'firstname': 'TestFirstNewName1',
+            'lastname': 'TestLastNewName1'
+        }
+        self.headers.update({'Authorization': 'Bearer ' + EMPLOYEE_TOKEN})
+
+        res = self.client().patch('/employee/1', json=new_company, headers=self.headers)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+
+    def test_o_delete_employee_by_id(self):
+        # First create employee that can be deleted later
+        new_employee = {
+            'firstname': 'TestFirstName3 to be deleted',
+            'lastname': 'TestLastName3 to be deleted',
+            'works_in': {
+                'company_id': 4
+            }
+        }
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        post_res = self.client().post('/employee', json=new_employee, headers=self.headers)
+        post_data = json.loads(post_res.data)
+
+        self.assertEqual(post_res.status_code, 200)
+
+        # Delete the created employee
+        employee_id = post_data.get('data').get('employee_details').get('id')
+        self.headers.update({'Authorization': 'Bearer ' + ADMIN_TOKEN})
+
+        delete_res = self.client().delete('/employee/' + str(employee_id), headers=self.headers)
+        delete_data = json.loads(delete_res.data)
+
+        self.assertEqual(delete_res.status_code, 200)
+
+
+# Make the tests conveniently executable
+if __name__ == "__main__":
+    unittest.main()

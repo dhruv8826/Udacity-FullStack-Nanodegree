@@ -1,1 +1,3 @@
-
+export AUTH0_DOMAIN=dev-cbsboi1u.us.auth0.com
+export JWT_SECRET=r4Ul6SkXkRxDJm2uAxSsuEI53XcrRDcrlKTIaEXUBBvTwTjNUz0KPAbKoaXW4Izx
+export CLIENT_ID=zKk57nJWgVoA6CrRdXNkv67RKlsJwC0T

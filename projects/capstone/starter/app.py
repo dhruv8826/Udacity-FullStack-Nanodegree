@@ -234,7 +234,7 @@ def create_app(test_config=None):
       return jsonify({
         'success': True,
         'data': {
-          'comapnay_details': company.json_view(),
+          'comapany_details': company.json_view(),
           'employees': [e.employee_json_view() for e in employees_in_company]
         }
       })

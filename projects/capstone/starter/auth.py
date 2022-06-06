@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-AUTH0_DOMAIN = os.environ['AUTH_DOMAIN']
+AUTH0_DOMAIN = 'dev-cbsboi1u.us.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = os.environ['AUDIENCE']
+API_AUDIENCE = 'empComp'
 
 ## AuthError Exception
 '''

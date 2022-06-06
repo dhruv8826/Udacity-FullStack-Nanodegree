@@ -8,7 +8,10 @@ load_dotenv()
 database_name = os.environ['DB_NAME']
 user_name = os.environ['DB_USER']
 user_password = os.environ['DB_PASSWORD']
-database_path = "postgresql://{}:{}@{}/{}".format(user_name, user_password, 'localhost:5432', database_name)
+if ((database_name is '' and user_password is '') or (database_name is None and user_password is None)):
+    database_path = "postgresql:///{}".format(database_name)
+else:
+    database_path = "postgresql://{}:{}@{}/{}".format(user_name, user_password, 'localhost:5432', database_name)
 
 db = SQLAlchemy()
 
